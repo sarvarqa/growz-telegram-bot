@@ -1,24 +1,15 @@
 import os
 import csv
-
 import re
-
-
 from datetime import datetime
 from typing import Optional, Dict, List
 
 from config import REG_CSV_PATH, DATA_DIR
 
-
-# Янги формат
+# New format
 FIELDNAMES = ["telegram_id", "full_name", "phone", "region", "registered_at"]
-
-# Эски формат (сенда ҳозир шу)
+# Old format
 OLD_FIELDNAMES = ["fullname", "phone", "region", "created_at"]
-
-
-
-FIELDNAMES = ["telegram_id", "full_name", "phone", "region", "registered_at"]
 
 
 def ensure_storage():
@@ -27,7 +18,6 @@ def ensure_storage():
         with open(REG_CSV_PATH, "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=FIELDNAMES)
             w.writeheader()
-
 
 
 def _read_header() -> List[str]:
@@ -40,26 +30,25 @@ def _read_header() -> List[str]:
 
 
 def normalize_phone(phone: str) -> str:
-    # Фақат рақамлар: +998 93... -> 99893...
+    # only digits: +998 93... -> 99893...
     return re.sub(r"\D+", "", phone or "").strip()
 
 
 def migrate_old_csv_if_needed():
     """
-    Агар registrations.csv эски форматда бўлса:
+    If registrations.csv is old format:
       fullname,phone,region,created_at
-    уни автоматик янги форматга ўтказади ва эскисини .bak қилиб сақлайди.
+    convert to new format and keep .bak
     """
     if not os.path.exists(REG_CSV_PATH):
         return
 
     header = _read_header()
     if header == FIELDNAMES:
-        return  # аллақачон янги
+        return  # already new
 
     if header != OLD_FIELDNAMES:
-        # Номаълум формат — қўл тегизмаймиз
-        return
+        return  # unknown format, do nothing
 
     old_path = REG_CSV_PATH + ".bak"
     os.replace(REG_CSV_PATH, old_path)
@@ -72,7 +61,7 @@ def migrate_old_csv_if_needed():
 
         for row in r:
             w.writerow({
-                "telegram_id": "",  # эски файлда tg_id йўқ
+                "telegram_id": "",  # old file has no tg_id
                 "full_name": (row.get("fullname") or "").strip(),
                 "phone": normalize_phone(row.get("phone") or ""),
                 "region": (row.get("region") or "").strip(),
@@ -83,14 +72,24 @@ def migrate_old_csv_if_needed():
 def _read_all() -> List[Dict[str, str]]:
     ensure_storage()
     migrate_old_csv_if_needed()
-
-def _read_all() -> List[Dict[str, str]]:
-    ensure_storage()
-
     with open(REG_CSV_PATH, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
+
+def _write_all(rows: List[Dict[str, str]]):
+    ensure_storage()
+    with open(REG_CSV_PATH, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        w.writeheader()
+        for r in rows:
+            w.writerow({
+                "telegram_id": str(r.get("telegram_id", "")).strip(),
+                "full_name": (r.get("full_name") or "").strip(),
+                "phone": normalize_phone(r.get("phone") or ""),
+                "region": (r.get("region") or "").strip(),
+                "registered_at": (r.get("registered_at") or "").strip(),
+            })
 
 
 def find_by_telegram_id(telegram_id: int) -> Optional[Dict[str, str]]:
@@ -103,13 +102,20 @@ def find_by_telegram_id(telegram_id: int) -> Optional[Dict[str, str]]:
 
 def find_by_phone(phone: str) -> Optional[Dict[str, str]]:
     p = normalize_phone(phone)
+    if not p:
+        return None
     for r in _read_all():
-        if p and p == normalize_phone(r.get("phone", "") or ""):
+        if p == normalize_phone(r.get("phone", "") or ""):
             return r
     return None
 
 
 def add_registration(telegram_id: int, full_name: str, phone: str, region: str) -> Dict[str, str]:
+    """
+    Rules:
+    - 1 telegram_id = 1 registration
+    - 1 phone = 1 registration
+    """
     ensure_storage()
     migrate_old_csv_if_needed()
 
@@ -118,6 +124,7 @@ def add_registration(telegram_id: int, full_name: str, phone: str, region: str) 
     phone_norm = normalize_phone(phone)
 
     rows = _read_all()
+
     for r in rows:
         if tid == str(r.get("telegram_id", "")).strip():
             raise ValueError("already_registered_by_tg")
@@ -129,56 +136,20 @@ def add_registration(telegram_id: int, full_name: str, phone: str, region: str) 
         "full_name": (full_name or "").strip(),
         "phone": phone_norm,
         "region": (region or "").strip(),
-        "registered_at": now
+        "registered_at": now,
     }
 
-
-def find_by_telegram_id(telegram_id: int) -> Optional[Dict[str, str]]:
-    rows = _read_all()
-    for r in rows:
-        if str(telegram_id) == str(r.get("telegram_id", "")).strip():
-            return r
-    return None
-
-def find_by_phone(phone: str) -> Optional[Dict[str, str]]:
-    phone_norm = (phone or "").strip()
-    rows = _read_all()
-    for r in rows:
-        if phone_norm == (r.get("phone", "") or "").strip():
-            return r
-    return None
-
-def add_registration(telegram_id: int, full_name: str, phone: str, region: str) -> Dict[str, str]:
-    ensure_storage()
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    row = {
-        "telegram_id": str(telegram_id),
-        "full_name": full_name.strip(),
-        "phone": phone.strip(),
-        "region": region.strip(),
-        "registered_at": now
-    }
-
-    if find_by_telegram_id(telegram_id) is not None:
-        raise ValueError("already_registered_by_tg")
-    if find_by_phone(phone) is not None:
-        raise ValueError("phone_already_used")
-
-
-    with open(REG_CSV_PATH, "a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDNAMES)
-        w.writerow(row)
-
-
+    # append and save
+    rows.append(row)
+    _write_all(rows)
     return row
 
 
 def bind_telegram_id_by_phone(telegram_id: int, phone: str) -> bool:
     """
-    Миграциядан кейин telegram_id бўш қолади.
-    Агар user телефон юборса ва шу телефон CSVда бор бўлса,
-    ўша қаторга telegram_id ни боғлаб қўямиз.
+    After migration telegram_id can be empty.
+    If user sends phone and that phone exists in CSV,
+    bind telegram_id into that row (only if empty).
     """
     ensure_storage()
     migrate_old_csv_if_needed()
@@ -201,18 +172,7 @@ def bind_telegram_id_by_phone(telegram_id: int, phone: str) -> bool:
     if not changed:
         return False
 
-    with open(REG_CSV_PATH, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDNAMES)
-        w.writeheader()
-        for r in rows:
-            w.writerow({
-                "telegram_id": str(r.get("telegram_id", "")).strip(),
-                "full_name": (r.get("full_name") or "").strip(),
-                "phone": normalize_phone(r.get("phone") or ""),
-                "region": (r.get("region") or "").strip(),
-                "registered_at": (r.get("registered_at") or "").strip(),
-            })
-
+    _write_all(rows)
     return True
 
 
@@ -220,6 +180,3 @@ def list_last(limit: int = 20) -> List[Dict[str, str]]:
     rows = _read_all()
     rows = [r for r in rows if any((v or "").strip() for v in r.values())]
     return rows[-limit:]
-
-    return row
-
