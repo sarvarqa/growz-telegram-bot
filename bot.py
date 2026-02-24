@@ -16,11 +16,16 @@ from keyboards import (
     CTA_JOIN_TEXT,
     BTN_MY_INFO,
     BTN_HELP,
+<<<<<<< HEAD
     BTN_ADMIN_LIST,
     BTN_ADMIN_EXPORT,
     kb_welcome,
     kb_after_registered,
     kb_after_registered_admin,
+=======
+    kb_welcome,
+    kb_after_registered,
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     kb_contact_share,
     kb_regions,
     kb_remove,
@@ -49,6 +54,7 @@ CONFIRM_TEXT = (
 
 LOCK = asyncio.Lock()
 
+<<<<<<< HEAD
 
 def _is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
@@ -61,6 +67,10 @@ def _kb_after_registered_for(user_id: int):
 def _normalize_phone(phone: str) -> str:
     return re.sub(r"\D+", "", phone or "").strip()
 
+=======
+def _normalize_phone(phone: str) -> str:
+    return (phone or "").strip()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 
 def _is_valid_full_name(text: str) -> bool:
     if not text:
@@ -73,7 +83,10 @@ def _is_valid_full_name(text: str) -> bool:
         return False
     return True
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 async def send_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         with open(ASSETS_WELCOME_PATH, "rb") as f:
@@ -83,10 +96,15 @@ async def send_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(WELCOME_TEXT, reply_markup=kb_welcome())
 
+<<<<<<< HEAD
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     storage.ensure_storage()
     storage.migrate_old_csv_if_needed()
+=======
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    storage.ensure_storage()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 
     tg_id = update.effective_user.id
     existing = storage.find_by_telegram_id(tg_id)
@@ -95,12 +113,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "✅ Siz allaqachon ro‘yxatdan o‘tgansiz.\n\n"
             "Quyidagi tugmalar orqali ma’lumotlaringizni ko‘rishingiz mumkin.",
+<<<<<<< HEAD
             reply_markup=_kb_after_registered_for(tg_id)
+=======
+            reply_markup=kb_after_registered()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
         )
         return
 
     await send_welcome(update, context)
 
+<<<<<<< HEAD
 
 async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     storage.ensure_storage()
@@ -109,12 +132,23 @@ async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tg_id = update.effective_user.id
     existing = storage.find_by_telegram_id(tg_id)
 
+=======
+async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    storage.ensure_storage()
+    tg_id = update.effective_user.id
+
+    existing = storage.find_by_telegram_id(tg_id)
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     if existing:
         await update.message.reply_text(
             "✅ Siz allaqachon ro‘yxatdan o‘tgansiz.\n"
             "Qayta ro‘yxatdan o‘tish mumkin emas.\n\n"
             "📄 Ma’lumotlarim tugmasini bosing.",
+<<<<<<< HEAD
             reply_markup=_kb_after_registered_for(tg_id)
+=======
+            reply_markup=kb_after_registered()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
         )
         return ConversationHandler.END
 
@@ -125,7 +159,10 @@ async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return STATE_NAME
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (update.message.text or "").strip()
 
@@ -146,7 +183,10 @@ async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return STATE_PHONE
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 async def handle_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message.contact:
         await update.message.reply_text(
@@ -175,6 +215,7 @@ async def handle_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return STATE_PHONE
 
+<<<<<<< HEAD
     # Эски ёзув бўлса (телефон бор, tg_id йўқ) — tg_id боғлаб қўямиз
     storage.bind_telegram_id_by_phone(update.effective_user.id, phone)
 
@@ -193,6 +234,16 @@ async def handle_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Agar bu xato bo‘lsa, admin bilan bog‘laning.",
                 reply_markup=_kb_after_registered_for(update.effective_user.id)
             )
+=======
+    used = storage.find_by_phone(phone)
+    if used:
+        await update.message.reply_text(
+            "❌ Ushbu telefon raqam bilan avval ro‘yxatdan o‘tilgan.\n"
+            "Qayta ro‘yxatdan o‘tish mumkin emas.\n\n"
+            "Agar bu xato bo‘lsa, admin bilan bog‘laning.",
+            reply_markup=kb_after_registered()
+        )
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
         return ConversationHandler.END
 
     context.user_data["phone"] = phone
@@ -204,7 +255,10 @@ async def handle_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return STATE_REGION
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 async def handle_region(update: Update, context: ContextTypes.DEFAULT_TYPE):
     region = (update.message.text or "").strip()
 
@@ -233,23 +287,38 @@ async def handle_region(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(
                     "✅ Siz allaqachon ro‘yxatdan o‘tgansiz.\n"
                     "Qayta ro‘yxatdan o‘tish mumkin emas.",
+<<<<<<< HEAD
                     reply_markup=_kb_after_registered_for(tg_id)
+=======
+                    reply_markup=kb_after_registered()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
                 )
                 return ConversationHandler.END
             if str(e) == "phone_already_used":
                 await update.message.reply_text(
                     "❌ Ushbu telefon raqam bilan avval ro‘yxatdan o‘tilgan.\n"
                     "Qayta ro‘yxatdan o‘tish mumkin emas.",
+<<<<<<< HEAD
                     reply_markup=_kb_after_registered_for(tg_id)
+=======
+                    reply_markup=kb_after_registered()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
                 )
                 return ConversationHandler.END
             raise
 
+<<<<<<< HEAD
     await update.message.reply_text(CONFIRM_TEXT, reply_markup=_kb_after_registered_for(tg_id))
     context.user_data.clear()
     return ConversationHandler.END
 
 
+=======
+    await update.message.reply_text(CONFIRM_TEXT, reply_markup=kb_after_registered())
+    context.user_data.clear()
+    return ConversationHandler.END
+
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
     await update.message.reply_text(
@@ -258,6 +327,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
+<<<<<<< HEAD
 
 async def my_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     storage.ensure_storage()
@@ -266,6 +336,11 @@ async def my_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tg_id = update.effective_user.id
     existing = storage.find_by_telegram_id(tg_id)
 
+=======
+async def my_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tg_id = update.effective_user.id
+    existing = storage.find_by_telegram_id(tg_id)
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     if not existing:
         await update.message.reply_text(
             "Siz hali ro‘yxatdan o‘tmagansiz.\n/start bosing.",
@@ -280,12 +355,16 @@ async def my_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• Viloyat: *{existing.get('region','-')}*\n"
         f"• Sana: *{existing.get('registered_at','-')}*"
     )
+<<<<<<< HEAD
     await update.message.reply_text(
         msg,
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=_kb_after_registered_for(tg_id)
     )
 
+=======
+    await update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN, reply_markup=kb_after_registered())
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 
 async def help_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -293,6 +372,7 @@ async def help_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Ro‘yxatdan o‘tish uchun /start yoki 👉 Ishtirok etmoqchiman tugmasi.\n"
         "• Jarayonni bekor qilish: /cancel\n"
         "• Ro‘yxatdan o‘tgan bo‘lsangiz, 📄 Ma’lumotlarim tugmasi orqali tekshiring.",
+<<<<<<< HEAD
         reply_markup=_kb_after_registered_for(update.effective_user.id)
     )
 
@@ -300,12 +380,23 @@ async def help_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def export_csv(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not _is_admin(user_id):
+=======
+        reply_markup=kb_after_registered()
+    )
+
+async def export_csv(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if user_id not in ADMIN_IDS:
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
         await update.message.reply_text("❌ Sizda admin huquqi yo‘q.")
         return
 
     storage.ensure_storage()
+<<<<<<< HEAD
     storage.migrate_old_csv_if_needed()
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     try:
         with open(REG_CSV_PATH, "rb") as f:
             await update.message.reply_document(
@@ -316,6 +407,7 @@ async def export_csv(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"❌ Export xato: {e}")
 
+<<<<<<< HEAD
 
 async def admin_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -355,6 +447,9 @@ async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     storage.ensure_storage()
     storage.migrate_old_csv_if_needed()
 
+=======
+async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     tg_id = update.effective_user.id
     existing = storage.find_by_telegram_id(tg_id)
 
@@ -362,7 +457,11 @@ async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "✅ Siz allaqachon ro‘yxatdan o‘tgansiz.\n"
             "📄 Ma’lumotlarim tugmasini bosing yoki /start yuboring.",
+<<<<<<< HEAD
             reply_markup=_kb_after_registered_for(tg_id)
+=======
+            reply_markup=kb_after_registered()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
         )
     else:
         await update.message.reply_text(
@@ -370,7 +469,10 @@ async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=kb_welcome()
         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 def build_application():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN topilmadi. .env faylni tekshiring.")
@@ -408,9 +510,12 @@ def build_application():
     app.add_handler(MessageHandler(filters.Regex(f"^{re.escape(BTN_MY_INFO)}$"), my_info))
     app.add_handler(MessageHandler(filters.Regex(f"^{re.escape(BTN_HELP)}$"), help_msg))
 
+<<<<<<< HEAD
     app.add_handler(MessageHandler(filters.Regex(f"^{re.escape(BTN_ADMIN_LIST)}$"), admin_list))
     app.add_handler(MessageHandler(filters.Regex(f"^{re.escape(BTN_ADMIN_EXPORT)}$"), admin_export_btn))
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, unknown_message))
 
     return app

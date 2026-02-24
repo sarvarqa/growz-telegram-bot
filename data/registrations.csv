@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 telegram_id,full_name,phone,region,registered_at
 2146861192,karimov sardor,998934938128,Samarqand,2026-02-21 13:23:57
 ,7403480246,,998977570939,Toshkent shahri
 556793553,Aliyev Sardor,998900228457,Toshkent viloyati,2026-02-24 15:15:04
 7403480246,Saa bbb,998977570939,Farg‘ona,2026-02-24 15:25:32
+=======
+fullname,phone,region,created_at
+karimov sardor,+998934938128,Samarqand,2026-02-21 13:23:57
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9

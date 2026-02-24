@@ -4,10 +4,13 @@ CTA_JOIN_TEXT = "👉 Ishtirok etmoqchiman"
 BTN_MY_INFO = "📄 Ma’lumotlarim"
 BTN_HELP = "ℹ️ Yordam"
 
+<<<<<<< HEAD
 # Admin tugmalar
 BTN_ADMIN_LIST = "📋 Ro‘yxat (Admin)"
 BTN_ADMIN_EXPORT = "📤 CSV Export (Admin)"
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 def kb_welcome():
     return ReplyKeyboardMarkup(
         [[KeyboardButton(CTA_JOIN_TEXT)]],
@@ -23,6 +26,7 @@ def kb_after_registered():
         resize_keyboard=True
     )
 
+<<<<<<< HEAD
 def kb_after_registered_admin():
     return ReplyKeyboardMarkup(
         [
@@ -34,6 +38,8 @@ def kb_after_registered_admin():
         resize_keyboard=True
     )
 
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 def kb_contact_share():
     return ReplyKeyboardMarkup(
         [[KeyboardButton("📞 Telefon raqamimni yuborish", request_contact=True)]],

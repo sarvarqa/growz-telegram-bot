@@ -1,11 +1,15 @@
 import os
 import csv
+<<<<<<< HEAD
 import re
+=======
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 from datetime import datetime
 from typing import Optional, Dict, List
 
 from config import REG_CSV_PATH, DATA_DIR
 
+<<<<<<< HEAD
 # Янги формат
 FIELDNAMES = ["telegram_id", "full_name", "phone", "region", "registered_at"]
 
@@ -13,6 +17,10 @@ FIELDNAMES = ["telegram_id", "full_name", "phone", "region", "registered_at"]
 OLD_FIELDNAMES = ["fullname", "phone", "region", "created_at"]
 
 
+=======
+FIELDNAMES = ["telegram_id", "full_name", "phone", "region", "registered_at"]
+
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
 def ensure_storage():
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(REG_CSV_PATH):
@@ -20,6 +28,7 @@ def ensure_storage():
             w = csv.DictWriter(f, fieldnames=FIELDNAMES)
             w.writeheader()
 
+<<<<<<< HEAD
 
 def _read_header() -> List[str]:
     if not os.path.exists(REG_CSV_PATH):
@@ -74,10 +83,15 @@ def migrate_old_csv_if_needed():
 def _read_all() -> List[Dict[str, str]]:
     ensure_storage()
     migrate_old_csv_if_needed()
+=======
+def _read_all() -> List[Dict[str, str]]:
+    ensure_storage()
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     with open(REG_CSV_PATH, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
+<<<<<<< HEAD
 
 def find_by_telegram_id(telegram_id: int) -> Optional[Dict[str, str]]:
     tid = str(telegram_id).strip()
@@ -118,10 +132,45 @@ def add_registration(telegram_id: int, full_name: str, phone: str, region: str) 
         "registered_at": now
     }
 
+=======
+def find_by_telegram_id(telegram_id: int) -> Optional[Dict[str, str]]:
+    rows = _read_all()
+    for r in rows:
+        if str(telegram_id) == str(r.get("telegram_id", "")).strip():
+            return r
+    return None
+
+def find_by_phone(phone: str) -> Optional[Dict[str, str]]:
+    phone_norm = (phone or "").strip()
+    rows = _read_all()
+    for r in rows:
+        if phone_norm == (r.get("phone", "") or "").strip():
+            return r
+    return None
+
+def add_registration(telegram_id: int, full_name: str, phone: str, region: str) -> Dict[str, str]:
+    ensure_storage()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    row = {
+        "telegram_id": str(telegram_id),
+        "full_name": full_name.strip(),
+        "phone": phone.strip(),
+        "region": region.strip(),
+        "registered_at": now
+    }
+
+    if find_by_telegram_id(telegram_id) is not None:
+        raise ValueError("already_registered_by_tg")
+    if find_by_phone(phone) is not None:
+        raise ValueError("phone_already_used")
+
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
     with open(REG_CSV_PATH, "a", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=FIELDNAMES)
         w.writerow(row)
 
+<<<<<<< HEAD
     return row
 
 
@@ -171,3 +220,6 @@ def list_last(limit: int = 20) -> List[Dict[str, str]]:
     rows = _read_all()
     rows = [r for r in rows if any((v or "").strip() for v in r.values())]
     return rows[-limit:]
+=======
+    return row
+>>>>>>> cd4359b74c56ceeb7cdfca6eaf141007fcf0ddf9
